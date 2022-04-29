@@ -1,42 +1,23 @@
 const User = require('../models/users');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
-exports.signup = async (req, res) => {
+exports.list = async(req, res) =>{
     try {
-        const { body } = req;
-        //hash
-        // const hash = await bcrypt.hash(body.password, 10);
-        const user = await User.create(body);
-        const token = await jwt.sign(
-            { id: user._id},
-            process.env.SECRET,
-            { expiresIn: 60*60*24*365 }
-        )
-        res.status(201).json({ token});
+        const users = await User.find();
+        res.status(200).json({ message: `${users.length} elementos encontrados`, users})
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ message: 'Algo salio mal'});
     }
 }
 
-exports.signin = async (req, res) => {
+exports.show = async(req, res) => {
+    const {id} = req.params;
     try {
-        const { body: { email, password } } = req;
-        const user = await User.findOne({email});
-        if(!user || !password){
-            throw new Error('Email o contraseña invalida');
+        const user = await User.findById(id);
+        if(!user){
+            throw new Error('Elemento no encontrado')
         }
-        const isValid = await bcrypt.compare(password, user.password);
-        if(!isValid){
-            throw new Error('Email o contraseña invalida');
-        }
-        const token = await jwt.sign(
-            { id: user._id},
-            process.env.SECRET,
-            { expiresIn: 60*60*24*365 }
-        )
-        res.status(201).json({ token })
+        res.status(200).json({ message: 'Elemento encontrado', user });
     } catch (error) {
-        res.status(401).json({ message: error.message });
+        res.status(400).json({ message: `El elemento con id: ${user} no fue encontrado`});
     }
 }

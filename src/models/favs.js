@@ -4,11 +4,6 @@ const favsSchema = new Schema({
     title: String,
     description: String,
     link: String,
-    user:{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    }
 },{
     timestamps: true,
 })
